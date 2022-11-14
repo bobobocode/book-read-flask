@@ -1,7 +1,7 @@
 # scafford模块
 
 ```
-# a singleton sentinel value for parameter defaults
+# 一个单例的哨兵值用于参数默认值???
 _sentinel = object()
 
 F = t.TypeVar("F", bound=t.Callable[..., t.Any])
@@ -21,7 +21,7 @@ T_route = t.TypeVar("T_route", bound=ft.RouteCallable)
 
 ```
 
-
+#该注解将把类中定义的方法进行切面编程, 在执行前调用类中的_check_setup_finished方法.
 def setupmethod(f: F) -> F:
     f_name = f.__name__
 
@@ -32,26 +32,12 @@ def setupmethod(f: F) -> F:
     return t.cast(F, update_wrapper(wrapper_func, f))
 
 
-```
+
 ```
 
+```
 class Scaffold:
-    """Common behavior shared between :class:`~flask.Flask` and
-    :class:`~flask.blueprints.Blueprint`.
-
-    :param import_name: The import name of the module where this object
-        is defined. Usually :attr:`__name__` should be used.
-    :param static_folder: Path to a folder of static files to serve.
-        If this is set, a static route will be added.
-    :param static_url_path: URL prefix for the static route.
-    :param template_folder: Path to a folder containing template files.
-        for rendering. If this is set, a Jinja loader will be added.
-    :param root_path: The path that static, template, and resource files
-        are relative to. Typically not set, it is discovered based on
-        the ``import_name``.
-
-    .. versionadded:: 2.0
-    """
+    # 我们来看Scaffold类, 它在顶层定义了对象的通用行为, 是Flask和Blueprint的父类.
 
     name: str
     _static_folder: t.Optional[str] = None
@@ -73,58 +59,43 @@ class Scaffold:
 
     def __init__(
         self,
+        # 定义对象的模块名, 通常是__name__的值
         import_name: str,
+        # 静态资源目录. 如果设置了, 则静态路由将被添加上
         static_folder: t.Optional[t.Union[str, os.PathLike]] = None,
+        # 静态资源路由URL的前缀
         static_url_path: t.Optional[str] = None,
+        # 用于渲染页面的模板文件目录. 如果设置了, 则Jinja的加载器将被添加上
         template_folder: t.Optional[str] = None,
+        # 静态资源、模板文件的根路径, 如果不设置, 则基于import_name指定
         root_path: t.Optional[str] = None,
     ):
-        #: The name of the package or module that this object belongs
-        #: to. Do not change this once it is set by the constructor.
-        self.import_name = import_name
+        主要是一些属性的赋值操作
+        self.import_name
+        self.static_folder
+        self.static_url_path
+        self.template_folder
+        其中self.root_path使用helpers模块中的get_root_path(self.import_name)来设定.
 
-        self.static_folder = static_folder  # type: ignore
-        self.static_url_path = static_url_path
-
-        #: The path to the templates folder, relative to
-        #: :attr:`root_path`, to add to the template loader. ``None`` if
-        #: templates should not be added.
-        self.template_folder = template_folder
-
-        if root_path is None:
-            root_path = get_root_path(self.import_name)
-
-        #: Absolute path to the package on the filesystem. Used to look
-        #: up resources contained in the package.
-        self.root_path = root_path
-
-        #: The Click command group for registering CLI commands for this
-        #: object. The commands are available from the ``flask`` command
-        #: once the application has been discovered and blueprints have
-        #: been registered.
+        Click中的命令组对象, 用于为本对象注册命令行接口
+        一旦应用程序被发现并且blueprints被注册, 这些命令就可以从flask
+        命令开始使用.
         self.cli = AppGroup()
 
-        #: A dictionary mapping endpoint names to view functions.
-        #:
-        #: To register a view function, use the :meth:`route` decorator.
-        #:
-        #: This data structure is internal. It should not be modified
-        #: directly and its format may change at any time.
+        映射endpoint名字到视图函数的字典
+        要注册一个视图函数, 使用route装饰器
+        这个数据结构是内部的, 不应该被直接使用, 并且它的格式随时可能变
+        化.
         self.view_functions: t.Dict[str, t.Callable] = {}
 
-        #: A data structure of registered error handlers, in the format
-        #: ``{scope: {code: {class: handler}}}``. The ``scope`` key is
-        #: the name of a blueprint the handlers are active for, or
-        #: ``None`` for all requests. The ``code`` key is the HTTP
-        #: status code for ``HTTPException``, or ``None`` for
-        #: other exceptions. The innermost dictionary maps exception
-        #: classes to handler functions.
-        #:
-        #: To register an error handler, use the :meth:`errorhandler`
-        #: decorator.
-        #:
-        #: This data structure is internal. It should not be modified
-        #: directly and its format may change at any time.
+        注册错误处理者的数据结构
+        格式为: ``{scope: {code: {class: handler}}}``. 
+        其中scope为handlers对应的blueprint的名字.
+        如果为None的话, 则handler对应所有的请求.
+        code为http状态码
+        最内层的字典将不同的异常类型映射到handler
+        要注册一个错误处理器, 使用装饰器errorhandler
+        这个数据结构也是内部的, 不应该被直接使用, 并且它的格式随时可能变
         self.error_handler_spec: t.Dict[
             ft.AppOrBlueprintKey,
             t.Dict[t.Optional[int], t.Dict[t.Type[Exception], ft.ErrorHandlerCallable]],
@@ -404,28 +375,14 @@ class Scaffold:
 
     @setupmethod
     def route(self, rule: str, **options: t.Any) -> t.Callable[[T_route], T_route]:
-        """Decorate a view function to register it with the given URL
-        rule and options. Calls :meth:`add_url_rule`, which has more
-        details about the implementation.
+        装饰一个视图函数, 将它用给定的URL规则和参数注册
+        调用方法add_url_rule来进行更详细的实现.
 
-        .. code-block:: python
+        endpoint名字如果不设置的话, 默认和视图函数名字一样
+        方法get head options 自动添加
 
-            @app.route("/")
-            def index():
-                return "Hello, World!"
-
-        See :ref:`url-route-registrations`.
-
-        The endpoint name for the route defaults to the name of the view
-        function if the ``endpoint`` parameter isn't passed.
-
-        The ``methods`` parameter defaults to ``["GET"]``. ``HEAD`` and
-        ``OPTIONS`` are added automatically.
-
-        :param rule: The URL rule string.
-        :param options: Extra options passed to the
-            :class:`~werkzeug.routing.Rule` object.
-        """
+        参数rule是URL rule字符串
+        可选参数用以传递给werkzeug.routing.Rule对象
 
         def decorator(f: T_route) -> T_route:
             endpoint = options.pop("endpoint", None)
@@ -443,25 +400,15 @@ class Scaffold:
         provide_automatic_options: t.Optional[bool] = None,
         **options: t.Any,
     ) -> None:
-        """Register a rule for routing incoming requests and building
-        URLs. The :meth:`route` decorator is a shortcut to call this
-        with the ``view_func`` argument. These are equivalent:
 
-        .. code-block:: python
+        注册一个rule用以路由到来的请求和构建URLs
+        装饰器route是使用view_func参数请求本函数的快捷方式. 它们是等效
+        的.
 
-            @app.route("/")
-            def index():
-                ...
+        是使用route注解之外，也可以手动调用本方法 传递view_func参数来
+        实现注册路由
 
-        .. code-block:: python
-
-            def index():
-                ...
-
-            app.add_url_rule("/", view_func=index)
-
-        See :ref:`url-route-registrations`.
-
+        
         The endpoint name for the route defaults to the name of the view
         function if the ``endpoint`` parameter isn't passed. An error
         will be raised if a function has already been registered for the
@@ -528,34 +475,17 @@ class Scaffold:
 
     @setupmethod
     def before_request(self, f: T_before_request) -> T_before_request:
-        """Register a function to run before each request.
-
-        For example, this can be used to open a database connection, or
-        to load the logged in user from the session.
-
-        .. code-block:: python
-
-            @app.before_request
-            def load_user():
-                if "user_id" in session:
-                    g.user = db.session.get(session["user_id"])
-
-        The function will be called without any arguments. If it returns
-        a non-``None`` value, the value is handled as if it was the
-        return value from the view, and further request handling is
-        stopped.
-        """
+        用于注册一个函数在每一个请求之前运行
+        比如打开一个数据库连接
+        或者加载存储在session中的用户登录信息
         self.before_request_funcs.setdefault(None, []).append(f)
         return f
 
     @setupmethod
     def after_request(self, f: T_after_request) -> T_after_request:
-        """Register a function to run after each request to this object.
-
-        The function is called with the response object, and must return
-        a response object. This allows the functions to modify or
-        replace the response before it is sent.
-
+        注册一个函数在每一个请求结束之后运行
+        该函数以response对象为参数, 并且必须返回一个response对象
+        这可以让你获得在返回响应之前修改它的能力
         If a function raises an exception, any remaining
         ``after_request`` functions will not be called. Therefore, this
         should not be used for actions that must execute, such as to

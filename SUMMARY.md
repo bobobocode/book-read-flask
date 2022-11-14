@@ -2,7 +2,7 @@
 
 * [我们即将开始的旅行](README.md)
 * [查看地图](chapters/topbottom.md)
-    * [设计Flask](chapertes/desgin.md)
+    * [主要路线](chapters/routes.md)
     * [Python Server](chapertes/pyserver.md)
 * [准备行李](chapters/prepare.md)
     * [Flask中的Python](chapertes/python.md)
@@ -15,6 +15,7 @@
     * [核心组件Flask](chapters/flask.md)
     * [脚手架scafford](chapters/scafford.md)
 * [专题漫游](chapters/subjects.md)
+    * [设计Flask](chapertes/desgin.md)
     * [Python工程](chapters/project.md)
     * [开源项目](chapters/opensource.md)
     * [Web安全](chapters/security.md)
