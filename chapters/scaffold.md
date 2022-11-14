@@ -196,53 +196,6 @@ class Scaffold:
     def _check_setup_finished(self, f_name: str) -> None:
         raise NotImplementedError
 
-    @property
-    def static_folder(self) -> t.Optional[str]:
-        """The absolute path to the configured static folder. ``None``
-        if no static folder is set.
-        """
-        if self._static_folder is not None:
-            return os.path.join(self.root_path, self._static_folder)
-        else:
-            return None
-
-    @static_folder.setter
-    def static_folder(self, value: t.Optional[t.Union[str, os.PathLike]]) -> None:
-        if value is not None:
-            value = os.fspath(value).rstrip(r"\/")
-
-        self._static_folder = value
-
-    @property
-    def has_static_folder(self) -> bool:
-        """``True`` if :attr:`static_folder` is set.
-
-        .. versionadded:: 0.5
-        """
-        return self.static_folder is not None
-
-    @property
-    def static_url_path(self) -> t.Optional[str]:
-        """The URL prefix that the static route will be accessible from.
-
-        If it was not configured during init, it is derived from
-        :attr:`static_folder`.
-        """
-        if self._static_url_path is not None:
-            return self._static_url_path
-
-        if self.static_folder is not None:
-            basename = os.path.basename(self.static_folder)
-            return f"/{basename}".rstrip("/")
-
-        return None
-
-    @static_url_path.setter
-    def static_url_path(self, value: t.Optional[str]) -> None:
-        if value is not None:
-            value = value.rstrip("/")
-
-        self._static_url_path = value
 
     def get_send_file_max_age(self, filename: t.Optional[str]) -> t.Optional[int]:
         """Used by :func:`send_file` to determine the ``max_age`` cache
@@ -299,29 +252,7 @@ class Scaffold:
         else:
             return None
 
-    def open_resource(self, resource: str, mode: str = "rb") -> t.IO[t.AnyStr]:
-        """Open a resource file relative to :attr:`root_path` for
-        reading.
-
-        For example, if the file ``schema.sql`` is next to the file
-        ``app.py`` where the ``Flask`` app is defined, it can be opened
-        with:
-
-        .. code-block:: python
-
-            with app.open_resource("schema.sql") as f:
-                conn.executescript(f.read())
-
-        :param resource: Path to the resource relative to
-            :attr:`root_path`.
-        :param mode: Open the file in this mode. Only reading is
-            supported, valid values are "r" (or "rt") and "rb".
-        """
-        if mode not in {"r", "rt", "rb"}:
-            raise ValueError("Resources can only be opened for reading.")
-
-        return open(os.path.join(self.root_path, resource), mode)
-
+    
     def _method_route(
         self,
         method: str,
@@ -333,46 +264,7 @@ class Scaffold:
 
         return self.route(rule, methods=[method], **options)
 
-    @setupmethod
-    def get(self, rule: str, **options: t.Any) -> t.Callable[[T_route], T_route]:
-        """Shortcut for :meth:`route` with ``methods=["GET"]``.
-
-        .. versionadded:: 2.0
-        """
-        return self._method_route("GET", rule, options)
-
-    @setupmethod
-    def post(self, rule: str, **options: t.Any) -> t.Callable[[T_route], T_route]:
-        """Shortcut for :meth:`route` with ``methods=["POST"]``.
-
-        .. versionadded:: 2.0
-        """
-        return self._method_route("POST", rule, options)
-
-    @setupmethod
-    def put(self, rule: str, **options: t.Any) -> t.Callable[[T_route], T_route]:
-        """Shortcut for :meth:`route` with ``methods=["PUT"]``.
-
-        .. versionadded:: 2.0
-        """
-        return self._method_route("PUT", rule, options)
-
-    @setupmethod
-    def delete(self, rule: str, **options: t.Any) -> t.Callable[[T_route], T_route]:
-        """Shortcut for :meth:`route` with ``methods=["DELETE"]``.
-
-        .. versionadded:: 2.0
-        """
-        return self._method_route("DELETE", rule, options)
-
-    @setupmethod
-    def patch(self, rule: str, **options: t.Any) -> t.Callable[[T_route], T_route]:
-        """Shortcut for :meth:`route` with ``methods=["PATCH"]``.
-
-        .. versionadded:: 2.0
-        """
-        return self._method_route("PATCH", rule, options)
-
+   
     @setupmethod
     def route(self, rule: str, **options: t.Any) -> t.Callable[[T_route], T_route]:
         装饰一个视图函数, 将它用给定的URL规则和参数注册
@@ -496,11 +388,10 @@ class Scaffold:
 
     @setupmethod
     def teardown_request(self, f: T_teardown) -> T_teardown:
-        """Register a function to be called when the request context is
-        popped. Typically this happens at the end of each request, but
-        contexts may be pushed manually as well during testing.
+        注册一个函数在请求的上下文被弹出时调用
+        这典型发生在每个请求的结束时
+        但是也可能发生在测试中手动push上下文时
 
-        .. code-block:: python
 
             with app.test_request_context():
                 ...

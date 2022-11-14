@@ -5,6 +5,57 @@
 URL rule
 
 endpoint
+端点就是程序中一组逻辑处理单元的ID，该ID对应的代码决定了对此ID请求应该作出何种响应。通常，端点与视图函数同名，但是你也可以修改它，例如：
+
+@app.route('/greeting/<name>', endpoint='say_hello')
+
+Endpoint有什么作用
+
+端点通常用作反向查询URL地址（viewfunction-->endpoint-->URL）。例如，在flask中有个视图，你想把它关联到另一个视图上（或从站点的一处连接到另一处）。不用去千辛万苦的写它对应的URL地址，直接使用URL_for()就可以啦：
+
+@app.route('/')
+def index():
+    print url_for('give_greeting', name='Mark') # 打印出 '/greeting/Mark'
+
+@app.route('/greeting/<name>')
+def give_greeting(name):
+    return 'Hello, {0}!'.format(name)
+备注：url_for()中give_greeting是端点名.
+这样做是大有裨益的：我们可以随意改变应用中的URL地址，却不用修改与之关联的资源的代码。
+
+为何要多此一举
+
+那么问题来了：为何要多此一举，为何要先把URL映射到端点上，再通过端点映射到视图函数上，为何不跳过中间的这个步骤？
+原因就是采用这种方法能够使程序更高、更快、更强。例如蓝本。蓝本允许我们把应用分割为一个个小的部分，现在admin蓝本中含有超级管理员级的资源，user蓝本中则含有用户一级的资源。
+蓝本允许咱们把应用分割为一个个以命名空间区分的小部分：
+main.py:
+
+from flask import Flask, Blueprint
+from admin import admin
+from user import user
+
+app = Flask(__name__)
+app.register_blueprint(admin, url_prefix='admin')
+app.register_blueprint(user, url_prefix='user')
+admin.py:
+
+admin = Blueprint('admin', __name__)
+
+@admin.route('/greeting')
+def greeting():
+    return 'Hello, administrative user!'
+user.py:
+
+user = Blueprint('user', __name__)
+@user.route('/greeting')
+def greeting():
+    return 'Hello, lowly normal user!'
+注意，在两个蓝本中路由地址'/greeting'的函数都叫"greeting"。如果我想调用admin对应的greeting函数，我不能说“我想要greeting”，因为这里还有一个user对应的greeting函数。端点这时就发挥作用了：指定一个蓝本名称作为端点的一部分--通过这种方式端点实现了对命名空间的支持。所以，我们可以这样写：
+
+print url_for('admin.greeting') # Prints '/admin/greeting'
+print url_for('user.greeting') # Prints '/user/greeting'
+
+
 
 .. code-block:: python
 
