@@ -1,0 +1,7 @@
+@startuml
+abstract class rf as "RuleFactory"
+rf : get_rules(map: "Map") -> t.Iterable["Rule"]
+class Rule {
+}
+rf <|.. Rule
+@endtuml

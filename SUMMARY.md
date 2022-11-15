@@ -17,6 +17,7 @@
 * [专题漫游](chapters/subjects.md)
     * [设计Flask](chapertes/desgin.md)
     * [Python工程](chapters/project.md)
+    * [Flask代码的细节](chapters/detail.md)
     * [开源项目](chapters/opensource.md)
     * [Web安全](chapters/security.md)
 * [本次旅行的回忆](chapters/thinking.md)

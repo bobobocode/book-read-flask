@@ -5,9 +5,14 @@
 而且我们只限于理解Flask中的用法, 而不扩大范围.
 以下代码的部分来自cpython项目, 我在其中删除了一些源注释, 添加了中文注释.
 
-* defaultdict
-
+importlib
 * spec
+
+一个命名空间，其中包含用于加载模块的相关导入信息。是 importlib.machinery.ModuleSpec 的实例.
+包括模块全限定名, 模块的加载器, 模块的原始地址, 子模块地址列表, 模块所在的包的全限名等
+
+* from asgiref.sync import async_to_sync
+
 
 * functool.update_wrapper
 
@@ -60,4 +65,10 @@ A = TypeVar('A', str, bytes)  # A是str或者bytes类型
 类型变量主要是用于静态类型检查.
 我们可以用它定义泛型类型以及泛型函数.
 
-* typing.Optional
+* typing.Optional 可选类型
+
+有些类型检查工具会对a:int = None这样的声明报错.
+使用Optional可以告诉类型检查工具这个参数除了给定的默认值外还可以是None, 所以可以改成使用a:Optional[int] = None
+
+Optional[X] 等价于 Union[X, None]
+3.10后可以用联合类型表达式直接写成 X | None
