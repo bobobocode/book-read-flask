@@ -7,6 +7,8 @@
 
 * defaultdict
 
+* spec
+
 * functool.update_wrapper
 
 更新一个 wrapper 函数以使其类似于 wrapped 函数.

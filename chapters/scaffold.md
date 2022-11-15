@@ -593,8 +593,8 @@ def _path_is_relative_to(path: pathlib.PurePath, base: str) -> bool:
         return False
 
 
+找到包含这个包或者模块的路径
 def _find_package_path(import_name):
-    """Find the path that contains the package or module."""
     root_mod_name, _, _ = import_name.partition(".")
 
     try:
