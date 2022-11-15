@@ -551,14 +551,6 @@ class Scaffold:
             return exc_class, None
 
 
-def _endpoint_from_view_func(view_func: t.Callable) -> str:
-    """Internal helper that returns the default endpoint for a given
-    function.  This always is the function name.
-    """
-    assert view_func is not None, "expected view func if endpoint is not provided."
-    return view_func.__name__
-
-
 def _matching_loader_thinks_module_is_package(loader, mod_name):
     """Attempt to figure out if the given name is a package or a module.
 
@@ -583,14 +575,6 @@ def _matching_loader_thinks_module_is_package(loader, mod_name):
         f" import hooks."
     )
 
-
-def _path_is_relative_to(path: pathlib.PurePath, base: str) -> bool:
-    # Path.is_relative_to doesn't exist until Python 3.9
-    try:
-        path.relative_to(base)
-        return True
-    except ValueError:
-        return False
 
 
 def _find_package_path(import_name):
