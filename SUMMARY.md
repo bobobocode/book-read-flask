@@ -1,8 +1,8 @@
 # Flask源代码之旅
 
-* [我们即将开始的旅行](README.md)
-* [查看地图](chapters/topbottom.md)
-    * [主要路线](chapters/routes.md)
+* [前言:我们即将开始的旅行](README.md)
+* [查看地图](chapters/overlook.md)
+    * [一个"请求"的路程](chapters/route.md)
     * [Python Server](chapertes/pyserver.md)
 * [准备行李](chapters/prepare.md)
     * [Flask中的Python](chapertes/python.md)
