@@ -6,6 +6,7 @@
     * [Python Server](chapertes/pyserver.md)
 * [准备行李](chapters/prepare.md)
     * [Flask中的Python](chapertes/python.md)
+    * [HTTP的再思考](chapters/protocol_http.md)
     * [WSGI](chapters/wsgi.md)
     * [Werkzeug](chapertes/werkzeug.md)
     * [Click](chapertes/click.md)
