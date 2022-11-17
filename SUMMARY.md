@@ -21,4 +21,4 @@
     * [Flask代码的细节](chapters/detail.md)
     * [开源项目](chapters/opensource.md)
     * [Web安全](chapters/security.md)
-* [本次旅行的回忆](chapters/thinking.md)
+* [旅行的回忆](chapters/thinking.md)
