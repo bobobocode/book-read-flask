@@ -18,11 +18,27 @@ app.run() # app为Flask类的对象
 
 该方法内调用werkzeug的run_simple函数
 
+run_simple构建wsgi server, 并且启动server的serve_forever函数
+
+这个wsgi server是werkzeug自己定义的BaseWSGIServer, 它基于Python内置的
+HTTPServer模板, 通过自定义handler将请求和响应处理转换成wsig标准. 并调
+用参数app, 该参数只需是一个wsgi函数.
+
 Flask类中实现了特殊方法__call__, 也就是Flask对象是一个可调用的对象,
 它被调用时执行wsgi_app方法. 所以Flask对象本身是一个wsgi web应用.
 所以werkzeug.run_simple方法被调用时传递的参数是Flask对象本身(self).
 
-flask.request_class(environ)
+flask.request_class(environ) -> wrapper.Request -> werkzeug.Request
+
+ctx.RequestContext
+    url_adapter = Flask create_url_adapter
+    match_request
+
+所以这里分为三个层次
+Python内置的HttpServer基于BaseServer形成了运行web服务器的调用框架
+werkzeug继承下来这个调用关系, 更具体定义了请求解析转换和调用Web App
+Flask定义了Web App的基本形式, 并启动werkzeug的server运行机制, 将自身对
+象self传递进去.
 
 ## 路由Request对象到视图函数
 

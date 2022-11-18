@@ -185,4 +185,8 @@ instead of the `view_func` parameter.
 ## 拦截器
 ## debug模式
 
+Flask的debug模式是用Flask对象中的debug属性标识和开启的.
+
+开发服务器在Python文件变化时自动重启.
+
 ## 内嵌开发server
