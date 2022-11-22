@@ -1,20 +1,36 @@
 # 一个"请求"的路程
 
-打开地图, 我们一定一样, 都是迫不及待地想了解首要一个问题:
-一个HTTP请求是如何通过Flask到达我们编写的视图函数的?
+我们看Flask官方给出的最基本最微型的一个使用示例:
 
-这个过程分成两个部分:
+```
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route("/")
+def hello_world():
+    return "<p>Hello, World!</p>"
+
+if __name__ == "__main__":
+    app.run()
+```
+这就是Flask世界最高层次的设计抽象.
+
+运行这个脚本, 请求http://localhost:5000/, Flask就会执行我们编写的视图
+函数hello_world, 并将其返回值作为HTTP响应返回.
+
+本章就从这个最高抽象的使用示例向下向内, 沿着HTTP请求的处理过程, 解析Flask的主高速公路.
+
+首先这个过程分成两个部分:
 
 一个部分是请求到达HTTP服务器, 被服务器解析包装成Request对象的过程.
 第二个部分是该Request对象被路由到我们写的视图函数的过程.
 
+接下来, 我们分别看一下这两个过程.
+
 ## 获得Request对象
 
 我们从使用Flask时常写的一行启动语句开始
-
-```
-app.run() # app为Flask类的对象
-```
 
 该方法内调用werkzeug的run_simple函数
 
