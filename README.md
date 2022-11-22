@@ -26,6 +26,9 @@ BaseServer BaseRequestHandler
 * Werkzeug
 
 是的, 要透彻理解Flask就需要透彻了解Werkzeug.
+虽然我们可以以Werkzeug提供的WSGI接口抽象为起点来了解Flask,
+但是这会造成我们还是无法真正理解Flask到底怎样做的处理, 以及为什么要这
+么去处理.
 
 * Flask
 

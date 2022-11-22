@@ -17,7 +17,7 @@ if __name__ == "__main__":
 这就是Flask世界最高层次的设计抽象.
 
 运行这个脚本, 请求http://localhost:5000/, Flask就会执行我们编写的视图
-函数hello_world, 并将其返回值作为HTTP响应返回.
+函数hello_world, 并将其返回值作为HTTP响应返回.(Flask把我们编写的处理某种url路径请求的函数, 称作视图函数)
 
 本章就从这个最高抽象的使用示例向下向内, 沿着HTTP请求的处理过程, 解析Flask的主高速公路.
 
@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
 接下来, 我们分别看一下这两个过程.
 
-## 获得Request对象
+## 解析HTTP请求构造Request对象
 
 我们从使用Flask时常写的一行启动语句开始
 
@@ -59,7 +59,8 @@ Flask定义了Web App的基本形式, 并启动werkzeug的server运行机制, �
 ## 路由Request对象到视图函数
 
 路由即是依据HTTP请求的URL, 查找到对应的视图函数.
-Flask把我们编写的处理某种url路径请求的函数, 称作视图函数
+
+1. 构建请求路径与视图函数的对应关系
 
 要告诉Flask URL与视图函数的对应规则, Flask提供的便捷的方法是在视图函数
 上加route装饰器, 装饰器的参数即为URL规则.
