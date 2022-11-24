@@ -99,10 +99,6 @@ class Local(object):
             raise AttributeError(name)
 
 ```
-这段代码实际是对__storage__ dict的封装，而这个dict中的key使用的就是get_indent函数获取的id（当有greenlet时使用greenlet id，没有则使用thread id）
-__storage__ dict中的value也是一个dict，这个dict就是该greenlet(或者线程)对应的local存储空间
-通过重新实现__getattr__, __setattr__等魔术方法，我们在greenlet或者线程中使用local对象时，实际会自动获取greenlet id(或者线程id)，从而获取到对应的dict存储空间，再通过name key就可以获取到真正的存储的对象。这个技巧实际上在编写线程安全或协程安全的代码时是非常有用的，即通过线程id(或协程id)来分别存储数据。
-当我们需要释放local数据的内存时，可以通过调用release_local()函数来释放当前context的local数据，如下
 
 ```
 >>> loc = Local()
@@ -113,8 +109,6 @@ False
 ```
 
 LocalStack
-
-LocalStack与Local对象类似，都是可以基于Greenlet协程或者线程进行全局存储的存储空间(实际LocalStack是对Local进行了二次封装），区别在于其数据结构是栈的形式。示例如下：
 
 >>> ls = LocalStack()
 >>> ls.push(42)
@@ -127,22 +121,11 @@ LocalStack与Local对象类似，都是可以基于Greenlet协程或者线程进
 23
 >>> ls.top
 42
-从示例看出Local对象存储的时候是类似字典的方式，需要有key和value，而LocalStack是基于栈的，通过push和pop来存储和弹出数据
-另外，当我们想释放存储空间的时候，也可以调用release_local()
-LocalStack在Flask框架中会频繁的出现，其Request Context和App Context的实现都是基于LocalStack，具体可以参考Github上的Flask源码
 
 LocalProxy
 
-LocalProxy用于代理Local对象和LocalStack对象，而所谓代理就是作为中间的代理人来处理所有针对被代理对象的操作，如下图所示：
+LocalProxy用于代理Local对象和LocalStack对象，而所谓代理就是作为中间的代理人来处理所有针对被代理对象的操作
 
-
-proxy.jpg
-接下来我们将重点讲下如下内容：
-
-LocalProxy的使用
-LocalProxy代码解析
-为什么要使用LocalProxy
-LocalProxy的使用
 
 初始化LocalProxy有三种方式：
 
