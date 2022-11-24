@@ -124,44 +124,7 @@ LocalStack
 
 LocalProxy
 
-LocalProxy用于代理Local对象和LocalStack对象，而所谓代理就是作为中间的代理人来处理所有针对被代理对象的操作
-
-
-初始化LocalProxy有三种方式：
-
-通过Local或者LocalStack对象的__call__ method
-from werkzeug.local import Local
-l = Local()
-
-# these are proxies
-request = l('request')
-user = l('user')
-
-
-from werkzeug.local import LocalStack
-_response_local = LocalStack()
-
-# this is a proxy
-response = _response_local()
-上述代码直接将对象像函数一样调用，这是因为Local和LocalStack都实现了__call__ method，这样其对象就是callable的，因此当我们将对象作为函数调用时，实际调用的是__call__ method，可以看下本文开头部分的Local的源代码，会发现__call__ method会返回一个LocalProxy对象
-
-通过LocalProxy类进行初始化
-l = Local()
-request = LocalProxy(l, 'request')
-实际上这段代码跟第一种方式是等价的，但这种方式是最'原始'的方式，我们在Local的源代码实现中看到其__call__ method就是通过这种方式生成LocalProxy的
-
-使用callable对象作为参数
-request = LocalProxy(get_current_request())
-通过传递一个函数，我们可以自定义如何返回Local或LocalStack对象
-
-那么LocalProxy是如何实现这种代理的呢？接下来看下源码解析
-
-LocalProxy代码解析
-
-下面截取LocalProxy的部分代码，我们来进行解析
-
-# LocalProxy部分代码
-
+```
 @implements_bool
 class LocalProxy(object):
     __slots__ = ('__local', '__dict__', '__name__', '__wrapped__')
@@ -272,13 +235,8 @@ print user['name']
 
 John
 Bob
-怎么样，看出区别了吧，直接使用LocalStack对象，user一旦赋值就无法再动态更新了，而使用Proxy，每次调用操作符(这里[]操作符用于获取属性)，都会重新获取user，从而实现了动态更新user的效果。见下图：
 
-
-proxy auto select object
-Flask以及Flask的插件很多时候都需要这种动态更新的效果，因此LocalProxy就会非常有用了。
-
-
+```
 
 Werkzeug提供的LocalProxy类允许像一个对象一样直接使用上下文局部变量, 而
 不是像Python内置的ContextVar那样需要使用get()方法.
@@ -318,6 +276,3 @@ Werkzeug提供了LocalStack用于封装一个列表, 而Local类用于封装一�
 和这些对象关联的了许多性能问题. 因为列表和字典是可变对象.
 LocalStack和Local需要做更多工作来确保数据没有被嵌套的上下文中共享.
 尽可能的设计你的程序直接使用LocalProxy.
-
-
-释放数据
