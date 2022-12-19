@@ -19,20 +19,20 @@ Flask源代码展现了杰出的软件工艺, 是我们学习Python进阶编程�
 
 在我们的旅途上, 有三座瑰丽的逻辑都市:
 
-* Python
+* Python (v3.10.6)
 
 BaseServer BaseRequestHandler 
 
 所有的知识点尽可能用源码进行讲解.
 
-* Werkzeug
+* Werkzeug (2.2.2)
 
 是的, 要透彻理解Flask就需要透彻了解Werkzeug.
 虽然我们可以以Werkzeug提供的WSGI接口抽象为起点来了解Flask,
 但是这会造成我们还是无法真正理解Flask到底怎样做的处理, 以及为什么要这
 么去处理.
 
-* Flask
+* Flask (2.2.2)
 
 连接这三座城市的高速公路就是一个HTTP请求的处理流程.
 

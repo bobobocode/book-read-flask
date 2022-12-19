@@ -1,22 +1,115 @@
-# 上下文局部变量
+# 上下文本地变量
 
-在处理一个web请求的过程中, 一些数据需要跨越多个函数进行处理或者使用,
-比如鉴权通过后得到的用户信息数据.
+在一个HTTP请求的处理过程中, 一些数据需要经多个函数进行处理或者使用,
+比如鉴权通过后得到的用户信息数据, 多个函数进行相应业务处理时, 都会使用
+到.
 
-这些数据作为参数层层传递将会造成增加程序的复杂度, 所以我们此时需要以全
-局数据的方式使用它们. 但这样无法保障线程安全, 不同的处理者可能会彼此干扰对方的数据.
+如果把这些数据作为参数, 层层传递需要处理的函数, 不仅会很麻烦, 还会让我们的Web应用增加程序复杂度.
+如果我们希望使用类似全局变量的方式存取它们, 我们就需要保障线程安全. 防止多线程情况下, 产生彼此数据的干扰.
 
-我们可以让这些全局变量中的数据以线程本地数据的方式进行存储和获取. Python内置的threading.local可以很方便地管理线程本地数据. 类似的有Java中的ThreadLocal.
-
-在Python的标准库中提供了thread local对象用于存储thread-safe和thread-specific的数据，通过这种方式存储的数据只在本线程中有效，而对于其它线程则不可见。正是基于这样的特性，我们可以把针对线程全局的数据存储进thread local对象，举个简单的例子
+所以我们应该让这些全局变量形式的数据以线程本地数据的方式进行存取. 
+Python内置的threading.local就是来实现这个目的. 
+它可以很方便地管理线程本地数据. 类似的有Java中的ThreadLocal.
+我们看一下Python中的实现.
 
 ```
-from threading import local
-thread_local_data = local()
-thread_local_data.user_name="Jim"
-thread_local_data.user_name
-'Jim'
+class local:
+    __slots__ = '_local__impl', '__dict__'
+
+    def __new__(cls, /, *args, **kw):
+        if (args or kw) and (cls.__init__ is object.__init__):
+            raise TypeError("Initialization arguments are not supported")
+        self = object.__new__(cls)
+        impl = _localimpl()
+        impl.localargs = (args, kw)
+        impl.locallock = RLock()
+        object.__setattr__(self, '_local__impl', impl)
+        # 我们需要在__init__将要被调用之前创建一个线程字典
+        # 以确保我们不会自己再次调用它
+        impl.create_dict()
+        return self
+
+    def __getattribute__(self, name):
+        with _patch(self):
+            return object.__getattribute__(self, name)
+
+    def __setattr__(self, name, value):
+        if name == '__dict__':
+            raise AttributeError(
+                "%r object attribute '__dict__' is read-only"
+                % self.__class__.__name__)
+        with _patch(self):
+            return object.__setattr__(self, name, value)
+
+    def __delattr__(self, name):
+        if name == '__dict__':
+            raise AttributeError(
+                "%r object attribute '__dict__' is read-only"
+                % self.__class__.__name__)
+        with _patch(self):
+            return object.__delattr__(self, name)
+
 ```
+```
+
+# We need to use objects from the threading module, but the threading
+# module may also want to use our `local` class, if support for locals
+# isn't compiled in to the `thread` module.  This creates potential problems
+# with circular imports.  For that reason, we don't import `threading`
+# until the bottom of this file (a hack sufficient to worm around the
+# potential problems).  Note that all platforms on CPython do have support
+# for locals in the `thread` module, and there is no circular import problem
+# then, so problems introduced by fiddling the order of imports here won't
+# manifest.
+
+class _localimpl:
+    """A class managing thread-local dicts"""
+    __slots__ = 'key', 'dicts', 'localargs', 'locallock', '__weakref__'
+
+    def __init__(self):
+        # The key used in the Thread objects' attribute dicts.
+        # We keep it a string for speed but make it unlikely to clash with
+        # a "real" attribute.
+        self.key = '_threading_local._localimpl.' + str(id(self))
+        # { id(Thread) -> (ref(Thread), thread-local dict) }
+        self.dicts = {}
+
+    def get_dict(self):
+        """Return the dict for the current thread. Raises KeyError if none
+        defined."""
+        thread = current_thread()
+        return self.dicts[id(thread)][1]
+
+    def create_dict(self):
+        """Create a new dict for the current thread, and return it."""
+        localdict = {}
+        key = self.key
+        thread = current_thread()
+        idt = id(thread)
+        def local_deleted(_, key=key):
+            # When the localimpl is deleted, remove the thread attribute.
+            thread = wrthread()
+            if thread is not None:
+                del thread.__dict__[key]
+        def thread_deleted(_, idt=idt):
+            # When the thread is deleted, remove the local dict.
+            # Note that this is suboptimal if the thread object gets
+            # caught in a reference loop. We would like to be called
+            # as soon as the OS-level thread ends instead.
+            local = wrlocal()
+            if local is not None:
+                dct = local.dicts.pop(idt)
+        wrlocal = ref(self, local_deleted)
+        wrthread = ref(thread, thread_deleted)
+        thread.__dict__[key] = wrlocal
+        self.dicts[idt] = wrthread, localdict
+        return localdict
+
+```
+
+
+
+通过这种方式存储的数据只在本线程中有效，而对于其它线程则不可见
 使用thread local对象虽然可以基于线程存储全局变量，但是在Web应用中可能会存在如下问题：
 
 有些应用使用的是greenlet协程，这种情况下无法保证协程之间数据的隔离，因为不同的协程可以在同一个线程当中。
@@ -25,11 +118,11 @@ thread_local_data.user_name
 
 但是当我们使用异步任务或者协程来执行一个请求的处理过程时, 不能保证每个请求都有自己的线程。可能是一个请求正在重用上一个请求中的线程，因此数据留在线程本地对象中, 不能保证对于请求上下文形成数据隔离.
 
-所以更进一步地, 我们要使用一种可以叫做上下文局部变量的方式来管理这类数
+所以更进一步地, 我们要使用一种可以叫做上下文本地变量的方式来管理这类数
 据.
-上下文局部变量可以全局性地定义或者导入, 但是它所包含的数据是特定于当前线程、异步任务或者协程的. 这样就防止了不小心获取或者覆盖了其它请求处理者的数据.
+上下文本地变量可以全局性地定义或者导入, 但是它所包含的数据是特定于当前线程、异步任务或者协程的. 这样就防止了不小心获取或者覆盖了其它请求处理者的数据.
 
-在werkzeug包中, 已经包含了上下文局部变量的相关对象.
+在werkzeug包中, 已经包含了上下文本地变量的相关对象.
 Flask充分使用了它们.
 
 所以我们要先介绍一下werkzeug的local模块.
@@ -238,9 +331,9 @@ Bob
 
 ```
 
-Werkzeug提供的LocalProxy类允许像一个对象一样直接使用上下文局部变量, 而
+Werkzeug提供的LocalProxy类允许像一个对象一样直接使用上下文本地变量, 而
 不是像Python内置的ContextVar那样需要使用get()方法.
-如果一个上下文局部变量被设置了, 它的本地代理会看起来和用起来像一个普通
+如果一个上下文本地变量被设置了, 它的本地代理会看起来和用起来像一个普通
 的对象变量被设置了一样.
 如果没有被设置, 则对于大多数操作会抛出RuntimeError异常.
 
@@ -270,7 +363,7 @@ def check_auth():
 ContextVar一次存储一个变量. 你会发现你需要存储一堆变量, 或者在一个命名
 空间下的
 多个属性.
-虽然用列表和字典可以实现目的, 但是在上下文局部变量中使用它们需要需要额
+虽然用列表和字典可以实现目的, 但是在上下文本地变量中使用它们需要需要额
 外的注意事项.
 Werkzeug提供了LocalStack用于封装一个列表, 而Local类用于封装一个字典.
 和这些对象关联的了许多性能问题. 因为列表和字典是可变对象.
