@@ -18,7 +18,6 @@
     * [Command](chapertes/click.md)
     * [Werkzeug](chapertes/werkzeug.md)
     * [核心Flask](chapters/flask.md)
-    * [脚手架Scafford](chapters/scafford.md)
     * [蓝图blueprints](chapters/blueprints.md)
     * [模板引擎](chapters/template.md)
     * [视图](chapters/view.md)
