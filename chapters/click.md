@@ -170,140 +170,47 @@ environment variables. The variables use the pattern
 ``FLASK_COMMAND_OPTION``. For example, to set the port for the run
 command, instead of ``flask run --port 8000``:
 
-.. tabs::
-
-   .. group-tab:: Bash
-
-      .. code-block:: text
-
-         $ export FLASK_RUN_PORT=8000
-         $ flask run
-          * Running on http://127.0.0.1:8000/
-
-   .. group-tab:: Fish
-
-      .. code-block:: text
-
-         $ set -x FLASK_RUN_PORT 8000
-         $ flask run
-          * Running on http://127.0.0.1:8000/
-
-   .. group-tab:: CMD
-
-      .. code-block:: text
-
-         > set FLASK_RUN_PORT=8000
-         > flask run
-          * Running on http://127.0.0.1:8000/
-
-   .. group-tab:: Powershell
-
-      .. code-block:: text
-
-         > $env:FLASK_RUN_PORT = 8000
-         > flask run
-          * Running on http://127.0.0.1:8000/
-
 These can be added to the ``.flaskenv`` file just like ``FLASK_APP`` to
 control default command options.
 
 
-Disable dotenv
-~~~~~~~~~~~~~~
+关闭dotenv
+----------
 
-The ``flask`` command will show a message if it detects dotenv files but
-python-dotenv is not installed.
+***flask***命令会在检测到dotenv文件但未安装python-dotenv时提示消息如下:
 
-.. code-block:: bash
+```sh
+$ flask run
+ * Tip: There are .env files present. Do "pip install python-dotenv" to use them.
+```
 
-    $ flask run
-     * Tip: There are .env files present. Do "pip install python-dotenv" to use them.
+你可以使用***FLASK_SKIP_DOTENV***环境变量告诉Flask不要加载dotenv文件,
+即使已安装python-dotenv的情况下.
 
-You can tell Flask not to load dotenv files even when python-dotenv is
-installed by setting the ``FLASK_SKIP_DOTENV`` environment variable.
-This can be useful if you want to load them manually, or if you're using
-a project runner that loads them already. Keep in mind that the
-environment variables must be set before the app loads or it won't
-configure as expected.
-
-.. tabs::
-
-   .. group-tab:: Bash
-
-      .. code-block:: text
-
-         $ export FLASK_SKIP_DOTENV=1
-         $ flask run
-
-   .. group-tab:: Fish
-
-      .. code-block:: text
-
-         $ set -x FLASK_SKIP_DOTENV 1
-         $ flask run
-
-   .. group-tab:: CMD
-
-      .. code-block:: text
-
-         > set FLASK_SKIP_DOTENV=1
-         > flask run
-
-   .. group-tab:: Powershell
-
-      .. code-block:: text
-
-         > $env:FLASK_SKIP_DOTENV = 1
-         > flask run
+当你想手动加载它们的时候或者你在使用一个已加载它们的工程runner时, 这将非常有用.
+记住: 环境变量必须在app加载之前设定否则它们将无法像预期的那样配置.
 
 
-Environment Variables From virtualenv
--------------------------------------
+virtualenv中的环境变量
+----------------------
 
-If you do not want to install dotenv support, you can still set environment
-variables by adding them to the end of the virtualenv's :file:`activate`
-script. Activating the virtualenv will set the variables.
-
-.. tabs::
-
-   .. group-tab:: Bash
-
-      Unix Bash, :file:`venv/bin/activate`::
-
-          $ export FLASK_APP=hello
-
-   .. group-tab:: Fish
-
-      Fish, :file:`venv/bin/activate.fish`::
-
-          $ set -x FLASK_APP hello
-
-   .. group-tab:: CMD
-
-      Windows CMD, :file:`venv\\Scripts\\activate.bat`::
-
-          > set FLASK_APP=hello
-
-   .. group-tab:: Powershell
-
-      Windows Powershell, :file:`venv\\Scripts\\activate.ps1`::
-
-          > $env:FLASK_APP = "hello"
+如果你不想安装dotenv支持, 你还可以通过把环境变量添加到virtualenv的
+***activate***脚本文件的最后.
+ Activating the virtualenv will set the variables.
 
 It is preferred to use dotenv support over this, since :file:`.flaskenv` can be
 committed to the repository so that it works automatically wherever the project
 is checked out.
 
 
-Custom Commands
----------------
+定制命令
+--------
 
-The ``flask`` command is implemented using `Click`_. See that project's
-documentation for full information about writing commands.
 
-This example adds the command ``create-user`` that takes the argument
-``name``. ::
+***flask***命令使用***Click***来实现.
+这个例子中添加了命令***create-user***来获取参数name:
 
+```sh
     import click
     from flask import Flask
 
@@ -317,6 +224,7 @@ This example adds the command ``create-user`` that takes the argument
 ::
 
     $ flask create-user admin
+```
 
 This example adds the same command, but as ``user create``, a command in a
 group. This is useful if you want to organize multiple related commands. ::
