@@ -18,7 +18,9 @@
 ## 使用什么技术来解决
 
 Python内置的threading.local就是来实现这个目的. 
-它可以很方便地管理线程本地数据.
+同一个线程中的函数可以像使用全局变量一样存取thread.local管理的数据, 
+而无需担心被其它线程中的处理扰乱.
+
 我们看一下Python中的实现.
 
 ```
@@ -61,15 +63,11 @@ class local:
 ```
 ```
 
-# We need to use objects from the threading module, but the threading
-# module may also want to use our `local` class, if support for locals
-# isn't compiled in to the `thread` module.  This creates potential problems
-# with circular imports.  For that reason, we don't import `threading`
-# until the bottom of this file (a hack sufficient to worm around the
-# potential problems).  Note that all platforms on CPython do have support
-# for locals in the `thread` module, and there is no circular import problem
-# then, so problems introduced by fiddling the order of imports here won't
-# manifest.
+我们需要使用 threading 模块中的对象, 但是 threading 模块也可能想要使用我们的 local 类.
+如果 thread 模块中没有编译对 locals 的支持。这会产生循环导入的潜在问题。
+为此, 我们直到这个文件的底部才导入 threading(这是一种足够巧妙地绕过潜在问题的方法).
+请注意, 在 CPython 的所有平台上, thread 模块都支持 locals, 因此没有循环导入问题,
+因此在此处调整导入顺序引入的问题不会显现。
 
 class _localimpl:
     """A class managing thread-local dicts"""
