@@ -1,5 +1,42 @@
 # 一个"请求"的路程
 
+.. flow::  
+   :width: 500  
+   :height: 400  
+   
+   st=>start: Start  
+   e=>end: End  
+   op1=>operation: Operation 1  
+   op2=>operation: Operation 2  
+   
+   st->op1->op2->e  
+
+
+
+Flask应用的HTTP请求处理过程可以分为以下几个步骤：
+
+1. 接收请求
+
+Flask应用首先需要接收到HTTP请求。这个过程是由Python的内置包socket和werkzeug库中的BaseWSGIServer和WSGIRequestHandler实现的。其中，socket库负责创建服务器套接字，BaseWSGIServer负责监听套接字并获取客户端连接，WSGIRequestHandler负责解析请求头和请求体，并构造environ字典作为参数传递给Flask应用处理。
+
+2. 路由匹配
+
+当Flask应用接收到请求后，会根据路由规则匹配对应的视图函数。这个过程是由Flask中的路由系统实现的。路由系统会根据URL路径、HTTP方法和其他条件来匹配对应的视图函数。
+
+3. 视图函数处理
+
+一旦路由匹配成功，Flask就会调用对应的视图函数来处理请求。视图函数可以访问environ字典中包含的所有信息，包括URL参数、查询参数、请求头和请求体等。
+
+4. 响应生成
+
+在视图函数中处理完业务逻辑后，需要把结果返回给客户端。这个过程是通过构造响应对象实现的。响应对象可以设置状态码、响应头和响应体等信息，并最终将整个响应发送回客户端。
+
+5. 响应发送
+
+最后，Flask应用会调用BaseWSGIServer和WSGIRequestHandler中的方法将响应发送回客户端。这个过程是通过socket套接字实现的，其中包括响应头和响应体的发送。
+
+总的来说，Flask应用的HTTP请求处理过程是一个由多个组件协同工作完成的复杂过程。理解这个过程对于深入了解Flask框架和Web开发非常重要。
+
 当一个HTTP请求到达Flask应用时，它会先被Flask内置的Werkzeug Server接收。接着，Werkzeug会将请求交给Flask应用来处理。
 
 Flask应用首先会从请求中解析出HTTP方法（GET、POST等）、URL、HTTP头和请求体等信息。接着，它会查找一个与URL匹配的路由，找到对应的视图函数进行处理。
