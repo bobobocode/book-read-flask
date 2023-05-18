@@ -10,7 +10,7 @@
     * [HTTP的再思考](chapters/protocol_http.md)
     * [WSGI](chapters/wsgi.md)
 * [一站又一站的旅途](chapters/modules.md)
-    * [上下文本地变量](chapters/locals.md)
+    * [本地变量](chapters/locals.md)
     * [日志](chapters/log.md)
     * [配置](chapters/config.md)
     * [核心组件Flask](chapters/flask.md)

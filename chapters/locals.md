@@ -1,15 +1,26 @@
-# 上下文本地变量
+# 本地变量
 
-在一个HTTP请求的处理过程中, 一些数据需要经多个函数进行处理或者使用,
-比如鉴权通过后得到的用户信息数据, 多个函数进行相应业务处理时, 都会使用
-到.
 
-如果把这些数据作为参数, 层层传递需要处理的函数, 不仅会很麻烦, 还会让我们的Web应用增加程序复杂度.
-如果我们希望使用类似全局变量的方式存取它们, 我们就需要保障线程安全. 防止多线程情况下, 产生彼此数据的干扰.
+## 为什么会有这么一个问题
 
-所以我们应该让这些全局变量形式的数据以线程本地数据的方式进行存取. 
+如果你理解Java中的ThreadLocal可以跳过以下讲解.
+
+在一个HTTP请求的处理过程中, 一些数据需要经过不同层的多个函数进行处理或者使用.
+比如在拦截器获取鉴权后得到的用户信息数据, 在控制器层的函数要使用进行业务处理.
+
+如果把这些数据作为参数, 层层传递, 使用起来非常不便.
+
+我们希望可以用像全局变量那样的方式存取它们, 则需要保障线程安全.
+防止多线程情况下, 产生彼此数据的干扰.
+
+所以我们应该让这些全局变量形式的数据以线程本地数据的方式进行存取.
+
+## 使用什么技术来解决
+
 Python内置的threading.local就是来实现这个目的. 
-它可以很方便地管理线程本地数据. 类似的有Java中的ThreadLocal.
+同一个线程中的函数可以像使用全局变量一样存取thread.local管理的数据, 
+而无需担心被其它线程中的处理扰乱.
+
 我们看一下Python中的实现.
 
 ```
@@ -52,15 +63,11 @@ class local:
 ```
 ```
 
-# We need to use objects from the threading module, but the threading
-# module may also want to use our `local` class, if support for locals
-# isn't compiled in to the `thread` module.  This creates potential problems
-# with circular imports.  For that reason, we don't import `threading`
-# until the bottom of this file (a hack sufficient to worm around the
-# potential problems).  Note that all platforms on CPython do have support
-# for locals in the `thread` module, and there is no circular import problem
-# then, so problems introduced by fiddling the order of imports here won't
-# manifest.
+我们需要使用 threading 模块中的对象, 但是 threading 模块也可能想要使用我们的 local 类.
+如果 thread 模块中没有编译对 locals 的支持。这会产生循环导入的潜在问题。
+为此, 我们直到这个文件的底部才导入 threading(这是一种足够巧妙地绕过潜在问题的方法).
+请注意, 在 CPython 的所有平台上, thread 模块都支持 locals, 因此没有循环导入问题,
+因此在此处调整导入顺序引入的问题不会显现。
 
 class _localimpl:
     """A class managing thread-local dicts"""
