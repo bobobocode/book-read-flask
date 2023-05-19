@@ -129,5 +129,6 @@ dmypy.json
 .pyre/
 
 *.md.html
+*.rst.html
 *.sw[po]
 .DS_Store
