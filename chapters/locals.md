@@ -3,6 +3,18 @@
 
 ## 为什么会有这么一个问题
 
+线程本地变量（Thread Local Variable）是一种特殊类型的变量，它被声明为“线程本地”的，也就是说每个线程都拥有自己独立的变量副本，在不同线程中访问该变量时不会相互干扰。
+
+我们需要使用线程本地变量主要是因为多线程环境下，共享变量可能会出现竞态条件（Race Condition）问题。竞态条件指的是多个线程同时访问同一个共享资源时，由于执行顺序不确定或者操作时间重叠而导致程序出现错误结果的情况。
+
+一个场景例子可以是在Web应用中使用了线程池技术来处理请求。当一个请求被接收后，它会被分配到一个空闲的线程上进行处理。在处理请求的过程中，可能需要访问一些全局状态变量或者单例对象等共享资源。
+
+如果这些共享资源没有被正确地同步或者保护，那么在多个请求同时访问时就有可能出现竞态条件问题，导致程序出现错误结果或者崩溃。
+
+这时候我们就可以使用线程本地变量来解决这个问题。例如，在处理每个请求之前先创建一个独立的数据库连接对象，并将其保存在当前线程的本地变量中。这样每个请求都可以独立地使用自己的数据库连接对象，而不需要担心其他请求的影响。
+
+另外，线程本地变量还可以避免使用锁等同步机制，提高程序的并发性能。因为线程本地变量是每个线程独立维护的，不需要对共享资源进行加锁或者同步操作。这样就可以避免锁竞争等性能瓶颈问题，在多线程环境下实现更好的并发效率。
+
 如果你理解Java中的ThreadLocal可以跳过以下讲解.
 
 在一个HTTP请求的处理过程中, 一些数据需要经过不同层的多个函数进行处理或者使用.
@@ -20,6 +32,142 @@
 Python内置的threading.local就是来实现这个目的. 
 同一个线程中的函数可以像使用全局变量一样存取thread.local管理的数据, 
 而无需担心被其它线程中的处理扰乱.
+
+Python的threading.local模块提供了一个本地线程存储对象，可以在多线程环境中安全地保存和访问线程特定的数据。每个线程都有自己的本地存储，可以在其中存储和访问数据，而不会干扰其他线程的本地存储。
+
+使用方法：
+
+1. 导入模块
+
+```python
+import threading
+```
+
+2. 创建本地存储对象
+
+```python
+local_data = threading.local()
+```
+
+3. 在主线程中为本地存储对象设置属性值
+
+```python
+local_data.x = 1
+local_data.y = 2
+```
+
+4. 在子线程中获取并使用本地存储对象的属性值
+
+```python
+def child_thread():
+    print(local_data.x)
+    print(local_data.y)
+```
+
+5. 启动子线程并等待其完成
+
+```python
+t = threading.Thread(target=child_thread)
+t.start()
+t.join()
+```
+
+注意事项：
+
+1. 本地存储对象只能在同一线程内使用，不能在线程之间共享。
+
+2. 每个线程都需要单独创建并设置其属性值。
+
+3. 如果未设置某个属性，则访问该属性将引发AttributeError异常。
+
+4. 在使用完毕后应该删除本地存储对象，以便释放资源。
+
+示例代码：
+
+```python
+import threading
+
+# 创建本地存储对象
+local_data = threading.local()
+
+# 在主线程中为本地存储对象设置属性值
+local_data.x = 1
+local_data.y = 2
+
+# 在子线程中获取并使用本地存储对象的属性值
+def child_thread():
+    print(local_data.x)
+    print(local_data.y)
+
+# 启动子线程并等待其完成
+t = threading.Thread(target=child_thread)
+t.start()
+t.join()
+
+# 删除本地存储对象
+del local_data
+```
+Python threading.local是一个线程本地存储的类，它提供了一种在多线程环境下共享全局变量的方法。在使用该类时，每个线程都可以访问同一个全局变量，但是每个线程修改变量时只会影响到自己的数据，不会影响其他线程的数据。
+
+其实现原理可以通过查看源代码来进行讲解。
+
+首先，在Python threading模块中定义了一个_Local类，该类继承自object。_Local类中有一个__init__方法和__getattribute__方法：
+
+```python
+class _Local(object):
+
+    def __init__(self):
+        object.__setattr__(self, "__local__", threading.local())
+
+    def __getattribute__(self, name):
+        try:
+            return object.__getattribute__(self, name)
+        except AttributeError:
+            pass
+        return getattr(object.__getattribute__(self, "__local__"), name)
+```
+
+在_Local的__init__方法中，它调用了threading.local()创建了一个local对象，并将其保存在实例变量“__local__”中。这里的threading.local()返回的是一个_LocalBase对象。
+
+在_Local的__getattribute__方法中，它先尝试调用object.__getattribute__()获取name属性，如果获取不到那么就执行getattr(object.__getattribute__(self, "__local__"), name)获取name属性。这里通过object.__getattribute__()访问“__local__”属性得到了真正存储数据的对象，并通过getattr()函数获取name属性值。
+
+接下来看一下_LocalBase类的实现。LocalBase类定义了__getattribute__、__setattr__和__delattr__方法。这些方法在Python中是对象属性访问的魔法方法。
+
+```python
+class _LocalBase(object):
+
+    def __getattribute__(self, name):
+        try:
+            return object.__getattribute__(self, name)
+        except AttributeError:
+            pass
+        val = self._get_current_object().get(name, _sentinel)
+        if val is not _sentinel:
+            return val
+        raise AttributeError(name)
+
+    def __setattr__(self, name, value):
+        self._get_current_object()[name] = value
+
+    def __delattr__(self, name):
+        del self._get_current_object()[name]
+```
+
+在_LocalBase的__getattribute__()方法中，它首先尝试调用object.__getattribute__()获取name属性值，如果获取不到那么就从_get_current_object()方法中获取当前线程的数据字典，并从字典中获取name属性值。
+
+在_LocalBase的__setattr__()方法和__delattr__()方法中，它们都是通过_get_current_object()方法获取当前线程的数据字典，并对其进行修改或删除操作。
+
+最后再看一下threading.local()函数的实现：
+
+```python
+def local():
+    return _localimpl.Local()
+```
+
+这个函数只是返回_Local()对象，即创建了一个本地存储对象。
+
+综上所述，Python threading.local类的实现原理就是使用了Python内置的线程本地存储机制。每个线程都有自己独立的数据存储空间，在该空间内可以访问同一个全局变量，但是每个线程修改变量时只会影响到自己的数据，不会影响其他线程的数据。这种实现方式可以使得多线程程序更加安全和稳定。
+-
 
 我们看一下Python中的实现.
 
