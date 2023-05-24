@@ -1,19 +1,15 @@
-.. currentmodule:: flask
+应用程序上下文
+==============
 
-The Application Context
-=======================
+在一个请求或者CLI命令等活动的过程中,应用程序上下文保持跟踪应用程序层面的数据.
+应用程序上下文使得这些数据可以通过访问:data:`current_app` 和:data:`g` 的代理来使用, 
+而无需向每个函数传递应用程序对象.
 
-The application context keeps track of the application-level data during
-a request, CLI command, or other activity. Rather than passing the
-application around to each function, the :data:`current_app` and
-:data:`g` proxies are accessed instead.
+和:doc:`/reqcontext` 类似, 能够在一个请求过程中保持跟踪请求层面的数据.
+当一个请求上下文被推出时, 一个相应的应用程序上下文也被推出.
 
-This is similar to :doc:`/reqcontext`, which keeps track of
-request-level data during a request. A corresponding application context
-is pushed when a request context is pushed.
-
-Purpose of the Context
-----------------------
+上下文的目标
+------------
 
 The :class:`Flask` application object has attributes, such as
 :attr:`~Flask.config`, that are useful to access within views and
