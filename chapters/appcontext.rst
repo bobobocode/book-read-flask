@@ -11,9 +11,10 @@
 上下文的目标
 ------------
 
-The :class:`Flask` application object has attributes, such as
-:attr:`~Flask.config`, that are useful to access within views and
-:doc:`CLI commands </cli>`. However, importing the ``app`` instance
+类:class:`Flask` 应用程序对象具有很多属性,  像属性:attr:`~Flask.config`, 
+能够用于接入视图和:doc:`CLI commands </cli>`. 
+
+However, importing the ``app`` instance
 within the modules in your project is prone to circular import issues.
 When using the :doc:`app factory pattern </patterns/appfactories>` or
 writing reusable :doc:`blueprints </blueprints>` or
